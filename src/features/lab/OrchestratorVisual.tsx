@@ -5,9 +5,15 @@ export type AgentStatus = 'idle' | 'active' | 'done' | 'error'
 export function OrchestratorVisual({
   agentNames,
   statuses,
+  orchestratorLabel = 'Orchestrator Agent',
+  orchestratorKey = 'Orchestrator',
 }: {
   agentNames: string[]
   statuses: Record<string, AgentStatus>
+  /** Display label for the orchestrator node — defaults to the Lab tab's "Orchestrator Agent". */
+  orchestratorLabel?: string
+  /** Key into `statuses` for the orchestrator node — defaults to "Orchestrator". */
+  orchestratorKey?: string
 }) {
   const width = 880
   const height = 220
@@ -31,9 +37,9 @@ export function OrchestratorVisual({
       ))}
 
       <g transform={`translate(${orchestrator.x - 105}, ${orchestrator.y - 22})`}>
-        <rect width={210} height={44} rx={12} className={`lab-node lab-node--${statusOf('Orchestrator')}`} />
+        <rect width={210} height={44} rx={12} className={`lab-node lab-node--${statusOf(orchestratorKey)}`} />
         <RobotIcon x={12} y={6} size={20} />
-        <text x={40} y={27} textAnchor="start" className="lab-node-label">Orchestrator Agent</text>
+        <text x={40} y={27} textAnchor="start" className="lab-node-label">{orchestratorLabel}</text>
       </g>
 
       {subAgents.map((a) => (

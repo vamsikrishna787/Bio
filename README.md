@@ -33,11 +33,12 @@ See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rule
 
 ## Site tabs
 
-The site is a static SPA (no backend) with four tabs: **About** (bio + Articles,
+The site is a static SPA (no backend) with five tabs: **About** (bio + Articles,
 with comments/likes), **Marketplace** (downloadable agent/skill packs),
-**System Design** (architecture diagrams), and **Lab** (a live multi-agent
-orchestrator demo). Everything works out of the box with zero configuration,
-using localStorage. Two pieces have an optional "real AWS" mode:
+**System Design** (architecture diagrams), **Lab** (a live multi-agent
+orchestrator demo), and **Assistant** (a ChatGPT-style chat with "John", an
+agent orchestrator). Everything works out of the box with zero configuration,
+using localStorage. Three pieces have an optional "real AWS" mode:
 
 ### Making comments/likes/download-counts shared across visitors (S3)
 
@@ -88,3 +89,22 @@ public static site should never ship long-lived AWS credentials in its
 bundle. Some Bedrock Runtime endpoints don't allow cross-origin browser
 requests; if a live call fails, the run automatically falls back to the local
 summary.
+
+### The Assistant tab ("John")
+
+The Assistant tab is a chat UI for "John" — an agent orchestrator who
+delegates to two specialists: one that calls businesses to book
+appointments (only after you approve a price), and one that drafts Gmail
+replies (only after you approve the draft). It's fully usable with zero
+setup: without a live connection configured it runs a simulated demo
+entirely in the browser (see `src/lib/assistantOrchestrator.ts`), the same
+way the Lab tab's flight orchestration demo does.
+
+To connect it to a real backend, deploy the sibling **Assistant** repo (AWS
+Lambda + Step Functions + Bedrock Claude Opus + Twilio + Gmail API — see its
+README) and open "Live assistant" in the Assistant tab to paste its API URL
+and token. Same BYO-credentials philosophy as Live Bedrock above: kept in
+`sessionStorage` only, sent nowhere but that API, cleared when the tab
+closes. Without it, nothing about this tab talks to real infrastructure —
+no real calls are placed and no real emails are sent.
+

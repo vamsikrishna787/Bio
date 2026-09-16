@@ -4,12 +4,14 @@ import { AboutTab } from './tabs/AboutTab'
 import { MarketplaceTab } from './tabs/MarketplaceTab'
 import { SystemDesignTab } from './tabs/SystemDesignTab'
 import { LabTab } from './tabs/LabTab'
+import { AssistantTab } from './tabs/AssistantTab'
 
 const TABS = [
   { id: 'about', label: 'About' },
   { id: 'marketplace', label: 'Marketplace' },
   { id: 'system-design', label: 'System Design' },
   { id: 'lab', label: 'Lab' },
+  { id: 'assistant', label: 'Assistant' },
 ] as const
 
 type TabId = (typeof TABS)[number]['id']
@@ -19,6 +21,7 @@ const TAB_PATHS: Record<TabId, string> = {
   marketplace: '/marketplace',
   'system-design': '/system-design',
   lab: '/lab',
+  assistant: '/assistant',
 }
 
 function getTabFromPath(pathname: string): TabId {
@@ -166,6 +169,7 @@ function App() {
           {activeTab === 'marketplace' && <MarketplaceTab />}
           {activeTab === 'system-design' && <SystemDesignTab />}
           {activeTab === 'lab' && <LabTab />}
+          {activeTab === 'assistant' && <AssistantTab />}
         </main>
 
         <footer>
