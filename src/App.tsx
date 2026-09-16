@@ -1,9 +1,53 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { profileImageBase64 } from './profileImage'
+import { AboutTab } from './tabs/AboutTab'
+import { MarketplaceTab } from './tabs/MarketplaceTab'
+import { SystemDesignTab } from './tabs/SystemDesignTab'
+import { LabTab } from './tabs/LabTab'
+
+const TABS = [
+  { id: 'about', label: 'About' },
+  { id: 'marketplace', label: 'Marketplace' },
+  { id: 'system-design', label: 'System Design' },
+  { id: 'lab', label: 'Lab' },
+] as const
+
+type TabId = (typeof TABS)[number]['id']
+
+const TAB_PATHS: Record<TabId, string> = {
+  about: '/',
+  marketplace: '/marketplace',
+  'system-design': '/system-design',
+  lab: '/lab',
+}
+
+function getTabFromPath(pathname: string): TabId {
+  const entry = Object.entries(TAB_PATHS).find(([, path]) => path === pathname)
+  return (entry?.[0] as TabId | undefined) ?? 'about'
+}
 
 function App() {
+  const [activeTab, setActiveTab] = useState<TabId>(() => getTabFromPath(window.location.pathname))
+
   useEffect(() => {
-    // Scroll-triggered fade-ins
+    function onPopState() {
+      setActiveTab(getTabFromPath(window.location.pathname))
+    }
+    window.addEventListener('popstate', onPopState)
+    return () => window.removeEventListener('popstate', onPopState)
+  }, [])
+
+  function selectTab(id: TabId) {
+    const path = TAB_PATHS[id]
+    if (window.location.pathname !== path) {
+      window.history.pushState(null, '', path)
+    }
+    setActiveTab(id)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
+  // Scroll-triggered fade-ins — re-run whenever the active tab's content changes.
+  useEffect(() => {
     const els = document.querySelectorAll('.fade-in')
     let io: IntersectionObserver | null = null
     if ('IntersectionObserver' in window) {
@@ -22,8 +66,11 @@ function App() {
     } else {
       els.forEach((el) => el.classList.add('visible'))
     }
+    return () => io?.disconnect()
+  }, [activeTab])
 
-    // Subtle click sound (synthesized, no external audio file)
+  // Subtle click sound (synthesized, no external audio file)
+  useEffect(() => {
     let audioCtx: AudioContext | null = null
     function getCtx() {
       if (!audioCtx) {
@@ -69,7 +116,6 @@ function App() {
 
     return () => {
       document.removeEventListener('click', onClick, true)
-      io?.disconnect()
     }
   }, [])
 
@@ -77,12 +123,19 @@ function App() {
     <>
       <header>
         <nav>
-          <a href="#top" className="brand">Vamsi Bollepalli</a>
+          <button type="button" className="brand" onClick={() => selectTab('about')}>Vamsi Bollepalli</button>
           <ul className="nav-links">
-            <li><a href="#about">About</a></li>
-            <li><a href="#skills">Skills</a></li>
-            <li><a href="#experience">Experience</a></li>
-            <li><a href="#certifications">Certifications</a></li>
+            {TABS.map((tab) => (
+              <li key={tab.id}>
+                <button
+                  type="button"
+                  className={`nav-tab${activeTab === tab.id ? ' active' : ''}`}
+                  onClick={() => selectTab(tab.id)}
+                >
+                  {tab.label}
+                </button>
+              </li>
+            ))}
             <li><a href="https://github.com/vamsikrishna787" target="_blank" rel="noopener">GitHub</a></li>
             <li><a href="https://www.linkedin.com/in/vamsibollepalli/" target="_blank" rel="noopener" className="nav-cta">LinkedIn</a></li>
           </ul>
@@ -90,149 +143,30 @@ function App() {
       </header>
 
       <div id="top">
-        <section className="hero">
-          <div className="wrap">
-            <div className="avatar-wrap">
-              <img src={profileImageBase64} alt="Vamsi Krishna Bollepalli" />
-            </div>
-            <div className="eyebrow">Software Engineer &amp; Cloud Architect</div>
-            <h1>Vamsi Krishna Bollepalli</h1>
-            <p className="role">Senior Software Engineer at <strong>JPMorgan Chase &amp; Co.</strong> &middot; Plano, TX</p>
-            <p className="summary">11+ years building cloud-native web applications with modern JavaScript and backend systems — now focused on solving real business problems with agentic AI, MCP, and RAG.</p>
-            <div className="hero-actions">
-              <a href="https://www.linkedin.com/in/vamsibollepalli/" target="_blank" rel="noopener" className="btn btn-primary">Connect on LinkedIn</a>
-              <a href="https://github.com/vamsikrishna787" target="_blank" rel="noopener" className="btn btn-ghost">View GitHub</a>
-              <a href="#experience" className="btn btn-ghost">View Experience</a>
-            </div>
-          </div>
-        </section>
-
-        <section id="about" className="tight">
-          <div className="wrap">
-            <div className="section-head fade-in">
-              <div className="section-eyebrow">About</div>
-              <h2>Building at the intersection<br />of cloud and AI</h2>
-            </div>
-            <div className="about-body fade-in">
-              <p>I'm a software engineer with <strong>11 years of experience</strong> designing and building web applications on public cloud platforms, using modern JavaScript frameworks and robust backend architectures.</p>
-              <p>More recently, my focus has shifted toward <strong>solving real business problems with agentic AI</strong> — building solutions using MCP, RAG pipelines, and autonomous agents that connect cloud infrastructure with practical, intelligent workflows.</p>
-            </div>
-            <div className="pill-row fade-in">
-              <span className="pill">Cloud Architecture</span>
-              <span className="pill">Modern JavaScript</span>
-              <span className="pill">Backend Systems</span>
-              <span className="pill">Agentic AI</span>
-              <span className="pill">MCP</span>
-              <span className="pill">RAG</span>
-            </div>
-          </div>
-        </section>
-
-        <section id="skills" className="tight" style={{ background: 'var(--bg-soft)' }}>
-          <div className="wrap">
-            <div className="section-head fade-in">
-              <div className="section-eyebrow">Expertise</div>
-              <h2>What I work with</h2>
-            </div>
-            <div className="skills-grid">
-              <div className="skill-card fade-in">
-                <div className="icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1d1d1f" strokeWidth="1.8"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h.79a4.5 4.5 0 1 1 0 9Z"/></svg></div>
-                <h3>Public Cloud</h3>
-                <p>Designing and deploying scalable, production-grade infrastructure on AWS.</p>
+        {activeTab === 'about' && (
+          <section className="hero">
+            <div className="wrap">
+              <div className="avatar-wrap">
+                <img src={profileImageBase64} alt="Vamsi Krishna Bollepalli" />
               </div>
-              <div className="skill-card fade-in">
-                <div className="icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1d1d1f" strokeWidth="1.8"><path d="m18 16 4-4-4-4M6 8l-4 4 4 4M14.5 4l-5 16"/></svg></div>
-                <h3>Modern JavaScript</h3>
-                <p>Building responsive, high-performance web applications end to end.</p>
-              </div>
-              <div className="skill-card fade-in">
-                <div className="icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1d1d1f" strokeWidth="1.8"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 8h10M7 12h10M7 16h6"/></svg></div>
-                <h3>Backend Solutions</h3>
-                <p>Architecting reliable APIs and services that scale with business needs.</p>
-              </div>
-              <div className="skill-card fade-in">
-                <div className="icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="#1d1d1f" stroke="none"><path d="m12 2.5 1.9 5.32a3 3 0 0 0 1.83 1.83L21.5 12l-5.77 2.35a3 3 0 0 0-1.83 1.83L12 21.5l-1.9-5.32a3 3 0 0 0-1.83-1.83L2.5 12l5.77-2.35a3 3 0 0 0 1.83-1.83Z"/></svg></div>
-                <h3>Agentic AI</h3>
-                <p>Designing autonomous agent workflows that solve real business problems.</p>
-              </div>
-              <div className="skill-card fade-in">
-                <div className="icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1d1d1f" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M9 2v6M15 2v6M6 8h12v4a6 6 0 0 1-6 6 6 6 0 0 1-6-6V8Z"/><path d="M12 18v4"/></svg></div>
-                <h3>MCP &amp; Tool Integration</h3>
-                <p>Connecting models to real systems using the Model Context Protocol.</p>
-              </div>
-              <div className="skill-card fade-in">
-                <div className="icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1d1d1f" strokeWidth="1.8"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2Z"/></svg></div>
-                <h3>RAG Pipelines</h3>
-                <p>Building retrieval-augmented systems that ground AI in real data.</p>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <section id="experience" className="tight">
-          <div className="wrap">
-            <div className="section-head fade-in">
-              <div className="section-eyebrow">Experience</div>
-              <h2>Career &amp; education</h2>
-            </div>
-            <div className="timeline fade-in">
-              <div className="timeline-item">
-                <div className="timeline-date">Current</div>
-                <div className="timeline-content">
-                  <h3>Senior Associate, Software Engineer</h3>
-                  <div className="org">JPMorgan Chase &amp; Co.</div>
-                  <p>Building cloud-based web applications and exploring agentic AI solutions to modernize business workflows.</p>
-                </div>
-              </div>
-              <div className="timeline-item">
-                <div className="timeline-date">Education</div>
-                <div className="timeline-content">
-                  <h3>Murray State University</h3>
-                  <div className="org">Degree</div>
-                  <p>Foundation in computer science and engineering principles.</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <section id="certifications" className="tight" style={{ background: 'var(--bg-soft)' }}>
-          <div className="wrap">
-            <div className="section-head fade-in">
-              <div className="section-eyebrow">Certifications</div>
-              <h2>AWS credentials</h2>
-            </div>
-            <div className="cert-grid fade-in">
-              <div className="cert-card">
-                <div className="badge">AWS</div>
-                <div>
-                  <h3>AWS Certified Solutions Architect – Associate</h3>
-                  <p>Amazon Web Services Training and Certification</p>
-                </div>
-              </div>
-              <div className="cert-card">
-                <div className="badge">AWS</div>
-                <div>
-                  <h3>AWS Certified Developer – Associate</h3>
-                  <p>Amazon Web Services Training and Certification</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <section className="tight">
-          <div className="wrap">
-            <div className="contact-card fade-in">
-              <h2>Let's connect</h2>
-              <p>This site is where I maintain my work, projects, and updates. Follow along or reach out on LinkedIn or GitHub.</p>
+              <div className="eyebrow">Software Engineer &amp; Cloud Architect</div>
+              <h1>Vamsi Krishna Bollepalli</h1>
+              <p className="role">Senior Software Engineer at <strong>JPMorgan Chase &amp; Co.</strong> &middot; Plano, TX</p>
+              <p className="summary">11+ years building cloud-native web applications with modern JavaScript and backend systems — now focused on solving real business problems with agentic AI, MCP, and RAG.</p>
               <div className="hero-actions">
-                <a href="https://www.linkedin.com/in/vamsibollepalli/" target="_blank" rel="noopener" className="btn btn-primary">Message on LinkedIn</a>
+                <a href="https://www.linkedin.com/in/vamsibollepalli/" target="_blank" rel="noopener" className="btn btn-primary">Connect on LinkedIn</a>
                 <a href="https://github.com/vamsikrishna787" target="_blank" rel="noopener" className="btn btn-ghost">View GitHub</a>
               </div>
             </div>
-          </div>
-        </section>
+          </section>
+        )}
+
+        <main>
+          {activeTab === 'about' && <AboutTab />}
+          {activeTab === 'marketplace' && <MarketplaceTab />}
+          {activeTab === 'system-design' && <SystemDesignTab />}
+          {activeTab === 'lab' && <LabTab />}
+        </main>
 
         <footer>
           &copy; 2026 Vamsi Krishna Bollepalli &middot; Plano, Texas

@@ -1,0 +1,30 @@
+{
+  "name": "gmail-inbox-agent",
+  "displayName": "Gmail Inbox Agent",
+  "version": "0.1.0",
+  "description": "Triages, summarizes, and drafts replies for a Gmail inbox by calling a Gmail MCP server.",
+  "model": {
+    "provider": "any",
+    "notes": "Model-agnostic by design — swap providers without touching the tool wiring below."
+  },
+  "mcpServers": {
+    "gmail": {
+      "description": "Connects to the user's Gmail account. Requires an OAuth-authorized Gmail MCP server (see SKILL.md).",
+      "tools": [
+        "search_threads",
+        "get_message",
+        "get_thread",
+        "create_draft",
+        "reply",
+        "label_message",
+        "label_thread"
+      ]
+    }
+  },
+  "skills": ["./SKILL.md"],
+  "permissions": {
+    "readInbox": true,
+    "sendMail": false,
+    "notes": "Sending is disabled by default — the agent drafts replies for a human to review and send."
+  }
+}
