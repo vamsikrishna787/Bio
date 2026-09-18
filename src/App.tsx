@@ -173,7 +173,7 @@ function App() {
         </main>
 
         <footer>
-          &copy; 2026 Vamsi Krishna Bollepalli &middot; Plano, Texas
+          &copy; {new Date().getFullYear()} Vamsi Krishna Bollepalli &middot; Plano, Texas
         </footer>
       </div>
     </>
